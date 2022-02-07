@@ -49,6 +49,7 @@ func generateStruct(input string) (string, error) {
 		strct += data + " }\n"
 		fmt.Printf("Genererated struct \n\n %s", strct)
 	case []interface{}:
+		fmt.Printf("Please provide the valid json input")
 	}
 	return "", nil
 }
