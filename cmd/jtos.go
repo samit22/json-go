@@ -37,7 +37,7 @@ func generateStruct(input string) (string, error) {
 	var data interface{}
 	err := json.Unmarshal([]byte(input), &data)
 	if err != nil {
-		fmt.Printf("Invalid data: %v\n", err)
+		fmt.Printf("Invalid json input: error: %v\n", err)
 		return "", err
 	}
 	var strct string
