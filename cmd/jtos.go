@@ -17,6 +17,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/atotto/clipboard"
+	"github.com/samit22/json-go/logger"
 	"github.com/spf13/cobra"
 )
 
@@ -34,10 +36,11 @@ Example: json-to-go jtg '{"name":"Samit","age":22}'
 }
 
 func generateStruct(input string) (string, error) {
+	logger.Info("Generating struct...")
 	var data interface{}
 	err := json.Unmarshal([]byte(input), &data)
 	if err != nil {
-		fmt.Printf("Invalid json input: error: %v\n", err)
+		logger.Error("Json is not valid.")
 		return "", err
 	}
 	var strct string
@@ -47,9 +50,14 @@ func generateStruct(input string) (string, error) {
 		strct += "type AutoStruct struct {\n"
 		data := handleMapStringInterface(data.(map[string]interface{}), "", 0)
 		strct += data + " }\n"
-		fmt.Printf("Genererated struct \n\n %s", strct)
+		logger.Info("Genererated struct.")
+		fmt.Printf("\n %s", strct)
+
+		if err := clipboard.WriteAll(strct); err == nil {
+			logger.Success("Copied to clipboard.")
+		}
 	case []interface{}:
-		fmt.Printf("Please provide the valid json input")
+		logger.Error("Json is not valid.")
 	}
 	return "", nil
 }
