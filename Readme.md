@@ -16,5 +16,5 @@ Usages
 ```
 
 Example
-![Nested JSON](https://github.com/samit22/json-go/blob/master/)
+![Nested JSON](https://github.com/samit22/json-go/blob/master/docs/images/example.png)
 
