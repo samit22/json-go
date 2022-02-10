@@ -1,7 +1,6 @@
 ## Json To Go Struct CLI
 [![codecov](https://codecov.io/gh/samit22/json-go/branch/master/graph/badge.svg?token=9RHY5T5CLY)](https://codecov.io/gh/samit22/json-go)
 
-
 ### Install
 
 
