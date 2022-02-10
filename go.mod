@@ -3,13 +3,13 @@ module github.com/samit22/json-go
 go 1.17
 
 require (
+	github.com/atotto/clipboard v0.1.4
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.3.2
 )
 
 require (
-	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/fsnotify/fsnotify v1.4.7 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
