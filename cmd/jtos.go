@@ -36,11 +36,12 @@ Example: json-to-go jtg '{"name":"Samit","age":22}'
 }
 
 func generateStruct(input string) (string, error) {
-	logger.Info("Generating struct...")
+	logger.Info("Generating struct...\n")
 	var data interface{}
 	err := json.Unmarshal([]byte(input), &data)
 	if err != nil {
-		logger.Error("Json is not valid.")
+		err := fmt.Errorf("invalid json err: %s", err)
+		logger.Error(err.Error())
 		return "", err
 	}
 	var strct string
@@ -53,13 +54,26 @@ func generateStruct(input string) (string, error) {
 		logger.Info("Genererated struct.")
 		fmt.Printf("\n %s", strct)
 
-		if err := clipboard.WriteAll(strct); err == nil {
-			logger.Success("Copied to clipboard.")
-		}
 	case []interface{}:
-		logger.Error("Json is not valid.")
+		for _, d := range data.([]interface{}) {
+			switch d.(type) {
+			case map[string]interface{}:
+				strct += "type []AutoStruct struct {\n"
+				data := handleMapStringInterface(d.(map[string]interface{}), "", 0)
+				strct += data + " }\n"
+				logger.Info("Genererated struct.")
+				fmt.Printf("\n %s", strct)
+			default:
+				msg := fmt.Sprintf("array is not a map but %T", d)
+				logger.Error(msg)
+				return "", fmt.Errorf(msg)
+			}
+		}
 	}
-	return "", nil
+	if err := clipboard.WriteAll(strct); err == nil {
+		logger.Success("Copied to clipboard.")
+	}
+	return strct, nil
 }
 
 func handleMapStringInterface(data map[string]interface{}, key string, nested int) string {
@@ -70,11 +84,20 @@ func handleMapStringInterface(data map[string]interface{}, key string, nested in
 	idxRpt := generateIdx(nested)
 	for k, v := range data {
 		switch v.(type) {
-		case string, int, int32, int64, float32, float64:
+		case string, int, int32, int64, float32, float64, bool:
 			row += generateRow(idxRpt, k, fmt.Sprintf("%T", v))
 		case map[string]interface{}:
 			mpData := handleMapStringInterface(v.(map[string]interface{}), k, nested+1)
 			row += mpData
+		case []interface{}:
+			for _, d := range v.([]interface{}) {
+				switch d.(type) {
+				case string, int, int32, int64, float32, float64, bool:
+					row += generateRow(idxRpt, k, fmt.Sprintf("[]%T", d))
+				default:
+					row += generateRow(idxRpt, k, fmt.Sprintf("[]%T", d))
+				}
+			}
 
 		default:
 			row += generateRow(idxRpt, k, "interface{}")
