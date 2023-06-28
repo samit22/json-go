@@ -7,19 +7,19 @@ import (
 
 var testCases = []map[string]string{
 	{
-		"case":  "Empty objects",
-		"input": `{}`,
-		"outpu": `type AutoStruct struct {`,
+		"case":   "Empty objects",
+		"input":  `{}`,
+		"output": `type AutoStruct struct {`,
 	},
 	{
-		"case":  "Object with multiple data type",
-		"input": `{"test": "string", "check": true}`,
-		"outpu": "Test string `json:\"test\"`",
+		"case":   "Object with multiple data type",
+		"input":  `{"test": "string", "check": true}`,
+		"output": "Test string `json:\"test\"`",
 	},
 	{
-		"case":  "Array of objects",
-		"input": `[{"check": true}]`,
-		"outpu": "Check bool `json:\"check\"`",
+		"case":   "Array of objects",
+		"input":  `[{"check": true}]`,
+		"output": "Check bool `json:\"check\"`",
 	},
 	{
 		"case":   "Array of objects with nexted array objects",
@@ -65,7 +65,7 @@ func TestGenerateStruct(t *testing.T) {
 	{
 		for _, c := range testCases {
 			ip := c["input"]
-			op := c["outpu"]
+			op := c["output"]
 
 			r, err := generateStruct(ip)
 			if err != nil {
