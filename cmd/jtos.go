@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"go/format"
 	"strings"
 
 	"github.com/atotto/clipboard"
@@ -44,9 +45,7 @@ func generateStruct(input string) (string, error) {
 	case map[string]interface{}:
 		strct += "type AutoStruct struct {\n"
 		data := handleMapStringInterface(data.(map[string]interface{}), "", 0)
-		strct += data + " }\n"
-		logger.Info("Generated struct.")
-		fmt.Printf("\n %s", strct)
+		strct += data + "}\n"
 
 	case []interface{}:
 		for _, d := range data.([]interface{}) {
@@ -54,9 +53,7 @@ func generateStruct(input string) (string, error) {
 			case map[string]interface{}:
 				strct += "type AutoStruct struct {\n"
 				data := handleMapStringInterface(d.(map[string]interface{}), "", 0)
-				strct += data + " }\n"
-				logger.Info("Generated struct.")
-				fmt.Printf("\n %s", strct)
+				strct += data + "}\n"
 			default:
 				msg := fmt.Sprintf("array is not a map but %T", d)
 				logger.Error(msg)
@@ -64,6 +61,18 @@ func generateStruct(input string) (string, error) {
 			}
 		}
 	}
+
+	// Format the generated struct using go/format
+	formatted, err := format.Source([]byte(strct))
+	if err != nil {
+		logger.Error(fmt.Sprintf("Failed to format struct: %s", err))
+		fmt.Printf("\n%s", strct)
+	} else {
+		strct = string(formatted)
+		logger.Info("Generated struct.")
+		fmt.Printf("\n%s\n", strct)
+	}
+
 	if err := clipboard.WriteAll(strct); err == nil {
 		logger.Success("Copied to clipboard.")
 	}
@@ -72,35 +81,34 @@ func generateStruct(input string) (string, error) {
 
 func handleMapStringInterface(data map[string]interface{}, key string, nested int) string {
 	var row string
+	indent := strings.Repeat("\t", nested+1)
 	if nested > 0 {
-		row += fmt.Sprintf("\t %s struct {\n", GenerateAttrName(key))
+		row += fmt.Sprintf("%s%s struct {\n", strings.Repeat("\t", nested), GenerateAttrName(key))
 	}
-	idxRpt := generateIdx(nested)
 	for k, v := range data {
 		switch v.(type) {
 		case string, int, int32, int64, float32, float64, bool:
-			row += generateRow(idxRpt, k, fmt.Sprintf("%T", v))
+			row += generateRow(indent, k, fmt.Sprintf("%T", v))
 		case map[string]interface{}:
 			mpData := handleMapStringInterface(v.(map[string]interface{}), k, nested+1)
 			row += mpData
 		case []interface{}:
 			for _, d := range v.([]interface{}) {
-				row += generateRow(idxRpt, k, fmt.Sprintf("[]%T", d))
+				row += generateRow(indent, k, fmt.Sprintf("[]%T", d))
 				break // only need to check the first element to determine type
 			}
-
 		default:
-			row += generateRow(idxRpt, k, "interface{}")
+			row += generateRow(indent, k, "interface{}")
 		}
 	}
 	if nested > 0 {
-		row += fmt.Sprintf("%s } `json:\"%s\"`\n", idxRpt, key)
+		row += fmt.Sprintf("%s} `json:\"%s\"`\n", strings.Repeat("\t", nested), key)
 	}
 	return row
 }
 
-func generateRow(idx, key, tp string) string {
-	return fmt.Sprintf("\t%s %s %s `json:\"%s\"`\n", idx, GenerateAttrName(key), tp, key)
+func generateRow(indent, key, tp string) string {
+	return fmt.Sprintf("%s%s %s `json:\"%s\"`\n", indent, GenerateAttrName(key), tp, key)
 }
 
 func GenerateAttrName(inp string) string {
@@ -113,6 +121,3 @@ func GenerateAttrName(inp string) string {
 	return resp
 }
 
-func generateIdx(inp int) string {
-	return strings.Repeat("\t", inp)
-}
