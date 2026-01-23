@@ -22,6 +22,8 @@ import (
 	"github.com/atotto/clipboard"
 	"github.com/samit22/json-go/logger"
 	"github.com/spf13/cobra"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 // v4Cmd represents the v4 command
@@ -33,6 +35,10 @@ It takes json object as input and generates go structs.
 Example: json-to-go jtg '{"name":"Samit","age":22}'
 `,
 	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) == 0 {
+			logger.Error("Please provide a JSON string as argument")
+			return
+		}
 		generateStruct(args[0])
 	},
 }
@@ -53,22 +59,22 @@ func generateStruct(input string) (string, error) {
 		strct += "type AutoStruct struct {\n"
 		data := handleMapStringInterface(data.(map[string]interface{}), "", 0)
 		strct += data + " }\n"
-		logger.Info("Genererated struct.")
+		logger.Info("Generated struct.")
 		fmt.Printf("\n %s", strct)
 
 	case []interface{}:
 		for _, d := range data.([]interface{}) {
 			switch d.(type) {
 			case map[string]interface{}:
-				strct += "type []AutoStruct struct {\n"
+				strct += "type AutoStruct struct {\n"
 				data := handleMapStringInterface(d.(map[string]interface{}), "", 0)
 				strct += data + " }\n"
-				logger.Info("Genererated struct.")
+				logger.Info("Generated struct.")
 				fmt.Printf("\n %s", strct)
 			default:
 				msg := fmt.Sprintf("array is not a map but %T", d)
 				logger.Error(msg)
-				return "", fmt.Errorf(msg)
+				return "", fmt.Errorf("array is not a map but %T", d)
 			}
 		}
 	}
@@ -81,7 +87,7 @@ func generateStruct(input string) (string, error) {
 func handleMapStringInterface(data map[string]interface{}, key string, nested int) string {
 	var row string
 	if nested > 0 {
-		row += fmt.Sprintf("\t %s struct {\n", GenreateAttrName(key))
+		row += fmt.Sprintf("\t %s struct {\n", GenerateAttrName(key))
 	}
 	idxRpt := generateIdx(nested)
 	for k, v := range data {
@@ -93,12 +99,8 @@ func handleMapStringInterface(data map[string]interface{}, key string, nested in
 			row += mpData
 		case []interface{}:
 			for _, d := range v.([]interface{}) {
-				switch d.(type) {
-				case string, int, int32, int64, float32, float64, bool:
-					row += generateRow(idxRpt, k, fmt.Sprintf("[]%T", d))
-				default:
-					row += generateRow(idxRpt, k, fmt.Sprintf("[]%T", d))
-				}
+				row += generateRow(idxRpt, k, fmt.Sprintf("[]%T", d))
+				break // only need to check the first element to determine type
 			}
 
 		default:
@@ -112,14 +114,15 @@ func handleMapStringInterface(data map[string]interface{}, key string, nested in
 }
 
 func generateRow(idx, key, tp string) string {
-	return fmt.Sprintf("\t%s %s %s `json:\"%s\"`\n", idx, GenreateAttrName(key), tp, key)
+	return fmt.Sprintf("\t%s %s %s `json:\"%s\"`\n", idx, GenerateAttrName(key), tp, key)
 }
 
-func GenreateAttrName(inp string) string {
+func GenerateAttrName(inp string) string {
 	str := strings.Split(inp, "_")
 	var resp string
+	caser := cases.Title(language.English)
 	for _, v := range str {
-		resp += strings.Title(v)
+		resp += caser.String(v)
 	}
 	return resp
 }
