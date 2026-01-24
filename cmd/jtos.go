@@ -120,4 +120,3 @@ func GenerateAttrName(inp string) string {
 	}
 	return resp
 }
-

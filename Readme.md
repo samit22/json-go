@@ -46,18 +46,20 @@ type AutoStruct struct {
 **Nested JSON with snake_case:**
 
 ```bash
-json-go jtg '{"user": {"first_name": "John", "last_name": "Doe"}, "is_premium": true}'
+json-go jtg '{"name": "samit ghimire", "first_name": "samit", "age": 22, "nested": {"name": "samit", "phone": ["name"]}}'
 ```
 
 **Output:**
 
 ```go
 type AutoStruct struct {
-	User struct {
-		FirstName string `json:"first_name"`
-		LastName  string `json:"last_name"`
-	} `json:"user"`
-	IsPremium bool `json:"is_premium"`
+	Name      string  `json:"name"`
+	FirstName string  `json:"first_name"`
+	Age       float64 `json:"age"`
+	Nested    struct {
+		Name  string   `json:"name"`
+		Phone []string `json:"phone"`
+	} `json:"nested"`
 }
 ```
 
