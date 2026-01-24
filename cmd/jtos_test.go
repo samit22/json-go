@@ -14,7 +14,7 @@ var testCases = []map[string]string{
 	{
 		"case":   "Object with multiple data type",
 		"input":  `{"test": "string", "check": true}`,
-		"output": "Test string `json:\"test\"`",
+		"output": "Test  string `json:\"test\"`",
 	},
 	{
 		"case":   "Array of objects",
@@ -22,9 +22,9 @@ var testCases = []map[string]string{
 		"output": "Check bool `json:\"check\"`",
 	},
 	{
-		"case":   "Array of objects with nexted array objects",
+		"case":   "Array of objects with nested array objects",
 		"input":  `[{"check": true, "my_field": {"test": [{"some_other":["some_thing"], "test2": "something"}], "test3": {"some": "value"}}}]`,
-		"output": "[]map[string]interface {} `json:\"test\"`",
+		"output": "[]map[string]interface{} `json:\"test\"`",
 	},
 }
 
