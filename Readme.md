@@ -71,4 +71,4 @@ json-go jtg '[{"id": 1, "name": "Item"}]'
 
 ## License
 
-Apache License 2.0
+MIT License
